@@ -7,8 +7,8 @@ int magSize = 20; //Number of rounds in a mag
 int playerHealthMax = 100; //Maximum player health
 int playerSize = 10; //Size of player character dot
 int playerGunDamage = 25; //Damage dealt by player's gun
-int playerBowDamage = 40; // Damage dealt by player's bow
-int playerMeleeDamage = 60; //  Damage dealt by player's melee
+int playerBowDamage = 50; // Damage dealt by player's bow
+int playerMeleeDamage = 70; //  Damage dealt by player's melee
 int gunshotsPerMinute = 120; //ROF of player's gun in RPM
 int arrowsPerMinute = 40; //ROF of player's bow in APM
 int swingsPerMinute = 70; //How many times the player can hit with melee in one minute
@@ -103,11 +103,18 @@ void handleInputs() {
     //melee.useWeapon();
   }
   if (keyPressed && (key == 'r' || key == 'R')) {
-    int ammoReloaded = magSize - magGunHolding;
-    magGunHolding = magSize;
-    dumpPouchHeld = dumpPouchHeld - ammoReloaded;
     lastMagSwap = millis();
     playerAble = false;
+    if (dumpPouchHeld >= magSize) {
+      int ammoReloaded = magSize - magGunHolding;
+      magGunHolding = magSize;
+      dumpPouchHeld = dumpPouchHeld - ammoReloaded;
+    } else if (dumpPouchHeld > 0) {
+      magGunHolding = dumpPouchHeld;
+      dumpPouchHeld = 0;
+    } else {
+      playerAble = true;
+    }
   }
 }
 
