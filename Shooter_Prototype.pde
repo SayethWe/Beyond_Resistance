@@ -26,7 +26,7 @@ int projectileBowSpeed = 10; //Arrow speed in pixels per frame
 int projectileMeleeSpeed = 0; //Because the melee weapon will spawn 0 travel projectiles for 1 frame
 int gunDrawLength = 25; //Size of the gun in pixels
 int bowDrawLength = 20; //Size of the bow in pixels
-int meleeDrawLength = 15; //Size of the melee in pixels
+int meleeDrawLength = 30; //Size of the melee in pixels
 int gunFireRange = 900; //distance the gun's bullets can go in pixels
 int bowFireRange = 500; // distance the bow's arrows can go in pixels
 int meleeRange = 0; // again, because backend the melee spawns projectiles
@@ -46,6 +46,8 @@ int playerCurrentScore;
 int weaponLastUsed;
 int timeToReload;
 int lastMagSwap;
+int lastMagRefill;
+String inabilityType = null;
 String healthDisplay;
 String scoreDisplay;
 String ammoDisplay;
@@ -72,6 +74,7 @@ void setup() {
   gun = new Weapon(gunDrawLength, playerGunDamage, projectileGunSpeed, gunshotsPerMinute, gunFireRange, gunColor);
   //bow = new Weapon(bowDrawLength, playerBowDamage, projectileBowSpeed, arrowsPerMinute, bowFireRange, bowColor);
   //melee = new Weapon(meleeDrawLength, playerMeleeDamage, projectileMeleeSpeed, swingsPerMinute, meleeRange, meleeColor);
+  magazines.add(new Magazine(magSize, int(random(0,21))));
   arialFont = createFont("Arial", 16, true); //creating an arial font, 16 pt, with antialiaising
   textFont(arialFont); // declare the font
   fill(0); //set the fill to black
@@ -105,21 +108,27 @@ void handleInputs() {
   if (keyPressed && (key == 'r' || key == 'R')) {
     lastMagSwap = millis();
     playerAble = false;
-    if (dumpPouchHeld >= magSize) {
-      int ammoReloaded = magSize - magGunHolding;
-      magGunHolding = magSize;
-      dumpPouchHeld = dumpPouchHeld - ammoReloaded;
-    } else if (dumpPouchHeld > 0) {
-      magGunHolding = dumpPouchHeld;
-      dumpPouchHeld = 0;
-    } else {
-      playerAble = true;
+    //if (dumpPouchHeld >= magSize) {
+    //  int ammoReloaded = magSize - magGunHolding;
+    //  magGunHolding = magSize;
+    //  dumpPouchHeld = dumpPouchHeld - ammoReloaded;
+    //} else if (dumpPouchHeld > 0) {
+    //  magGunHolding = dumpPouchHeld;
+    //  dumpPouchHeld = 0;
+    //} else {
+    //  playerAble = true;
+    //}
+    magazines.add(new Magazine(magSize,magGunHolding));
+    magGunHolding = magazines.get(0).getHolding();
+    magazines.remove(magazines.get(0));
+    inabilityType = "SWAP";
+  }
+  if (keyPressed && (key == 'q' || key == 'Q')) {
+    
+    for (Magazine thisMagazine : magazines) {
+      thisMagazine.reload();
+      playerAble = false;
     }
-    /*		
-    magazines.add(new Magazine(magSize,magGunHolding));		
-    magGunHolding = magazines.get(0).getStoring();		
-    magazines.remove(magazines.get(0));		
-    */
   }
 }
 
@@ -129,9 +138,13 @@ void spawnEnemy() { //spawn an enemy at a random location on the screen
 }
 
 void handleAbilities() {
-  if (millis() >= lastMagSwap + playerMagSwapTime) {
+  if (millis() >= lastMagSwap + playerMagSwapTime && inabilityType == "SWAP") {
     playerAble = true;
   }
+  if (millis() >= lastMagRefill + timeToReload && inabilityType == "REFILL") {
+    playerAble = true;
+  }
+  inabilityType = null;
 }
 
 void moveEntities() { //move the entities to where they need to be
@@ -205,7 +218,7 @@ void checkHealths() {
   for (Projectile thisProjectile : projectiles) {
     if (thisProjectile.getExpired()) {
       expiredProjectiles.add(thisProjectile);
-      println("projectile too old, Removing");
+      //println("projectile too old, Removing");
     }
   }
   for (Projectile thisExpiredProjectile : expiredProjectiles) {
@@ -289,12 +302,12 @@ class Player {
     return y;
   }
 
-  void doDamage(int damage) {
-    health = health - damage;
-  }
-
   int getHealth() {
     return health;
+  }
+  
+  void doDamage(int damage) {
+    health = health - damage;
   }
 
   void move() { // let's move the player around with key input
@@ -333,7 +346,7 @@ class Weapon {
     fireRate = _firerate;
     range = _range;
     weaponColor = _color;
-    storedMagazine = new Magazine(magSize);
+    //storedMagazine = new Magazine(magSize);
   }
 
   void drawWeapon() {
