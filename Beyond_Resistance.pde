@@ -51,7 +51,7 @@ String inabilityType = null;
 String healthDisplay;
 String scoreDisplay;
 String ammoDisplay;
-boolean playerAble;
+boolean playerAble = true;
 
 //clasess that need Creating
 Player playerCharacter;
