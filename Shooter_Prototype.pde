@@ -14,9 +14,9 @@ int arrowsPerMinute = 40; //ROF of player's bow in APM
 int swingsPerMinute = 70; //How many times the player can hit with melee in one minute
 int playerSpeed = 4; //Movement speed of player in pixels per frame
 int playerReloadTime = 60; //Time it takes the player to reload one bullet in milliseconds
-int playerMagSwapTime = 500; //Amount of time the player can't fire or move while swapping mags
+int playerMagSwapTime = 250; //Amount of time the player can't fire or move while swapping mags
 int enemySize = 15; //Size of enemy character dots
-int enemyDamage = 1; //Damage dealt by enemy attacks in damage per frame (change to per attack)
+int enemyDamage = 1; //Damage dealt by enemy attacks in damage per attack
 int enemyAttackRate = 60; //how often an enemy attacks in attacks per minute
 int enemyHealthMax = 50; //Health of each enemy
 int enemySpeed = 6; //Enemy movement speed in pixels per frame
@@ -115,6 +115,11 @@ void handleInputs() {
     } else {
       playerAble = true;
     }
+    /*		
+    magazines.add(new Magazine(magSize,magGunHolding));		
+    magGunHolding = magazines.get(0).getStoring();		
+    magazines.remove(magazines.get(0));		
+    */
   }
 }
 
@@ -396,8 +401,9 @@ class Projectile {
 class Magazine {
   int size;
   int storing;
-  Magazine(int _size) {
+  Magazine(int _size, int _storing) {
     size = _size;
+    storing = _storing;
   }
 
   void reload() {
