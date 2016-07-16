@@ -419,7 +419,7 @@ class Magazine {
   }
 
   void reload() {
-    for ( int spareAmmo = 0; spareAmmo <= dumpPouchHeld; spareAmmo++) {
+    for (int spareAmmo = 0; spareAmmo <= dumpPouchHeld; spareAmmo++) {
       if (storing < size) {
         storing++;
         timeToReload = timeToReload + playerReloadTime;
