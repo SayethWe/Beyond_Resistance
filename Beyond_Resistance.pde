@@ -14,7 +14,7 @@ int arrowsPerMinute = 40; //ROF of player's bow in APM
 int swingsPerMinute = 70; //How many times the player can hit with melee in one minute
 int playerSpeed = 4; //Movement speed of player in pixels per frame
 int playerReloadTime = 60; //Time it takes the player to reload one bullet in milliseconds
-int playerMagSwapTime = 250; //Amount of time the player can't fire or move while swapping mags
+int playerMagSwapTime = 1000; //Amount of time the player can't fire or move while swapping mags
 int enemySize = 15; //Size of enemy character dots
 int enemyDamage = 1; //Damage dealt by enemy attacks in damage per attack
 int enemyAttackRate = 60; //how often an enemy attacks in attacks per minute
@@ -45,9 +45,8 @@ int enemyLastSpawn = 0;
 int playerCurrentScore;
 int weaponLastUsed;
 int timeToReload;
-int lastMagSwap;
-int lastMagRefill;
-String inabilityType = null;
+int inabilityWaitTime;
+int inabilityStartTime;
 String healthDisplay;
 String scoreDisplay;
 String ammoDisplay;
@@ -100,34 +99,38 @@ void draw() {
 }
 
 void handleInputs() {
-  if (mousePressed) {
-    gun.useWeapon();
-    //bow.useWeapon();
-    //melee.useWeapon();
-  }
-  if (keyPressed && (key == 'r' || key == 'R')) {
-    lastMagSwap = millis();
-    playerAble = false;
-    //if (dumpPouchHeld >= magSize) {
-    //  int ammoReloaded = magSize - magGunHolding;
-    //  magGunHolding = magSize;
-    //  dumpPouchHeld = dumpPouchHeld - ammoReloaded;
-    //} else if (dumpPouchHeld > 0) {
-    //  magGunHolding = dumpPouchHeld;
-    //  dumpPouchHeld = 0;
-    //} else {
-    //  playerAble = true;
-    //}
-    magazines.add(new Magazine(magSize,magGunHolding));
-    magGunHolding = magazines.get(0).getHolding();
-    magazines.remove(magazines.get(0));
-    inabilityType = "SWAP";
-  }
-  if (keyPressed && (key == 'q' || key == 'Q')) {
-    
-    for (Magazine thisMagazine : magazines) {
-      thisMagazine.reload();
+  if(playerAble) {
+    if (mousePressed) {
+      gun.useWeapon();
+      //bow.useWeapon();
+      //melee.useWeapon();
+    }
+    if (keyPressed && (key == 'r' || key == 'R')) {
+      inabilityStartTime = millis();
+      inabilityWaitTime = playerMagSwapTime;
       playerAble = false;
+      //if (dumpPouchHeld >= magSize) {
+      //  int ammoReloaded = magSize - magGunHolding;
+      //  magGunHolding = magSize;
+      //  dumpPouchHeld = dumpPouchHeld - ammoReloaded;
+      //} else if (dumpPouchHeld > 0) {
+      //  magGunHolding = dumpPouchHeld;
+      //  dumpPouchHeld = 0;
+      //} else {
+      //  playerAble = true;
+      //}
+      magazines.add(new Magazine(magSize,magGunHolding));
+      magGunHolding = magazines.get(0).getHolding();
+      magazines.remove(magazines.get(0));
+    }
+    if (keyPressed && (key == 'q' || key == 'Q')) {
+      
+      for (Magazine thisMagazine : magazines) {
+        thisMagazine.reload();
+      }
+      playerAble = false;
+      inabilityStartTime = millis();
+      inabilityWaitTime = timeToReload;
     }
   }
 }
@@ -138,13 +141,9 @@ void spawnEnemy() { //spawn an enemy at a random location on the screen
 }
 
 void handleAbilities() {
-  if (millis() >= lastMagSwap + playerMagSwapTime && inabilityType == "SWAP") {
+  if (millis() >= inabilityWaitTime + inabilityStartTime) {
     playerAble = true;
   }
-  if (millis() >= lastMagRefill + timeToReload && inabilityType == "REFILL") {
-    playerAble = true;
-  }
-  inabilityType = null;
 }
 
 void moveEntities() { //move the entities to where they need to be
